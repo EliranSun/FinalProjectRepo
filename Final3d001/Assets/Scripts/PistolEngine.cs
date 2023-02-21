@@ -30,11 +30,6 @@ public class PistolEngine : NetworkBehaviour
 
     void Update()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
-
         if (Input.GetButtonDown("Fire1") && roundsRemaining > 0 && Time.time >= nextFireTime)
         {
             Shoot();

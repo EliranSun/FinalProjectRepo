@@ -156,7 +156,7 @@ public class PlayerMovement : NetworkBehaviour
             velocity.y = 0;
         }
 
-        if (Input.GetButtonDown("Jump") && isGrounded == true)
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
             velocity.y += 10f;
         }

@@ -160,10 +160,10 @@ public class GameManager : MonoBehaviour
         }
 
         // For testing
-        foreach (int[] spawnPoint in SpawnPoints)
-        {
-            spawnPoint[3] = 0;
-        }
+        // foreach (int[] spawnPoint in SpawnPoints)
+        // {
+        //     spawnPoint[3] = 0;
+        // }
 
         return new Vector3(7, 10, 8);
     }

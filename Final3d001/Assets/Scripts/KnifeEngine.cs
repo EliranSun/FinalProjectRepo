@@ -57,7 +57,7 @@ public class KnifeEngine : NetworkBehaviour
     IEnumerator StartShot()
     {
         yield return new WaitForSeconds(0.23f); //Anim hit delay
-        // ShootRaycast();
+        ShootRaycast();
     }
 
     void ShootRaycast()

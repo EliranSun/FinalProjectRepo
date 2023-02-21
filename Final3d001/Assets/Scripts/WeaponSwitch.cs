@@ -11,10 +11,6 @@ public class WeaponSwitch : NetworkBehaviour
     
     void Update()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Equip1();

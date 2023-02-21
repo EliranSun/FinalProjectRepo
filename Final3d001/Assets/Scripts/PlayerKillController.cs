@@ -61,7 +61,6 @@ public class PlayerKillController : NetworkBehaviour
                 return;
             }
 
-
             if (hit.collider.gameObject.CompareTag("Player") && IsOwner)
             {
                 PlayerKillController hitPlayerController = hit.collider.gameObject.GetComponent<PlayerKillController>();

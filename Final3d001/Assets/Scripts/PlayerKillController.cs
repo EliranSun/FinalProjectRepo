@@ -1,17 +1,14 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using TMPro;
 
 public class PlayerKillController : NetworkBehaviour
 {
-    int killCount = 0;
     bool oldIsBeingHit = false;
-    [SerializeField] TimeShiftableObject shiftableWeapon;
     private NetworkVariable<PlayerWeaponData> weaponState = new NetworkVariable<PlayerWeaponData>();
     private NetworkVariable<Vector3> playerPosition = new NetworkVariable<Vector3>();
+    NetworkVariable<int> killCount = new NetworkVariable<int>(0);
     public NetworkVariable<int> health = new NetworkVariable<int>(100);
 
     int damage = 10;
@@ -24,15 +21,20 @@ public class PlayerKillController : NetworkBehaviour
         playerPosition.OnValueChanged += OnPlayerPositionChanged;
         weaponState.OnValueChanged += OnWeaponStateChanged;
         health.OnValueChanged += OnHealthChanged;
+        killCount.OnValueChanged += OnKillCountChanged;
     }
 
     private void Start()
     {
         if (IsOwner)
         {
-            // Randomize player color
             GameObject head = GameObject.Find("Head (1)");
-            head.GetComponent<Renderer>().material.color = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+
+            float red = Mathf.Clamp(UnityEngine.Random.value, 0f, 1f);
+            float green = Mathf.Clamp(UnityEngine.Random.value, 0f, 1f);
+            float blue = Mathf.Clamp(UnityEngine.Random.value, 0f, 1f);
+
+            head.GetComponent<Renderer>().material.color = new Color(red, green, blue);
         }
     }
 
@@ -60,25 +62,45 @@ public class PlayerKillController : NetworkBehaviour
             {
                 return;
             }
-
-            if (hit.collider.gameObject.CompareTag("Player") && IsOwner)
+            
+            if (!IsOwner)
             {
-                PlayerKillController hitPlayerController = hit.collider.gameObject.GetComponent<PlayerKillController>();
+                // TODO: Should move outside this scope
+                return;
+            }
+
+            if (hit.collider.gameObject.CompareTag("Player"))
+            {
+                PlayerKillController hitPlayerController =
+                    hit.collider.gameObject.GetComponent<PlayerKillController>();
                 hitPlayerController.TakeAHitServerRpc(damage);
 
                 if (hitPlayerController.health.Value - damage <= 0)
                 {
                     transmitWeaponIndexServerRpc();
+                    TransmitPlayerKillCountServerRpc();
                 }
             }
         }
+    }
+
+    [ServerRpc]
+    void TransmitPlayerKillCountServerRpc()
+    {
+        killCount.Value++;
+    }
+
+    void OnKillCountChanged(int oldKillCount, int newKillCount)
+    {
+        print($"KILL COUNT: {newKillCount}");
     }
 
     private void OnHealthChanged(int oldHealth, int newHealth)
     {
         if (IsOwner)
         {
-            GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text = $"Hit! {newHealth}/100 \r\n";
+            GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text =
+                $"Hit! {newHealth}/100 \r\n";
             Invoke(nameof(ClearPlayerMessages), 4);
 
             if (newHealth == 0)
@@ -94,7 +116,10 @@ public class PlayerKillController : NetworkBehaviour
         transform.position = newPosition;
     }
 
-    private void OnWeaponStateChanged(PlayerWeaponData oldWeaponData, PlayerWeaponData newWeaponData)
+    private void OnWeaponStateChanged(
+        PlayerWeaponData oldWeaponData,
+        PlayerWeaponData newWeaponData
+    )
     {
         try
         {
@@ -110,7 +135,8 @@ public class PlayerKillController : NetworkBehaviour
     void TakeAHitServerRpc(int damage = 10)
     {
         health.Value -= damage;
-        GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text = $"Hit! {health.Value}/100 \r\n";
+        GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text =
+            $"Hit! {health.Value}/100 \r\n";
         Invoke(nameof(ClearPlayerMessages), 4);
 
         if (health.Value <= 0)
@@ -158,7 +184,8 @@ public class PlayerKillController : NetworkBehaviour
         public int weaponIndex;
         public ulong playerId;
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer)
+            where T : IReaderWriter
         {
             serializer.SerializeValue(ref weaponIndex);
             serializer.SerializeValue(ref playerId);
@@ -181,7 +208,7 @@ public class PlayerKillController : NetworkBehaviour
     //
     //         // if (playerTarget.health - 10 == 0)
     //         // {
-    //         //     OnKillSuccess(senderClientId);    
+    //         //     OnKillSuccess(senderClientId);
     //         // }
     //     }
     // }

@@ -1,15 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-//using System.Numerics;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerMovement : NetworkBehaviour
 {
-    //Player Roataion
     float mouseX;
     public float lookSpeed;
     public Transform cameraTurn;
@@ -50,7 +43,7 @@ public class PlayerMovement : NetworkBehaviour
         rotationX = 0f;
 
         //Player Movement
-        moveSpeed = 40f;
+        moveSpeed = 23f;
         cc = GetComponent<CharacterController>();
 
         //Gravity
@@ -65,16 +58,11 @@ public class PlayerMovement : NetworkBehaviour
 
     void Update()
     {
-        if (IsClient && IsOwner)
-        {
-            UpdateFromClient();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.T) && IsHost)
         {
             TeleportToNextSpawnPoint();
         }
-
+        
         if (Input.GetKeyDown(KeyCode.M))
         {
 
@@ -88,12 +76,11 @@ public class PlayerMovement : NetworkBehaviour
                 Cursor.lockState = CursorLockMode.None;
             }
         }
-    }
-
-    void TeleportToNextSpawnPoint()
-    {
-        spawnPosition = GameManager.GetAvailableSpawnPoint();
-        transform.position = spawnPosition;
+        
+        if (IsClient && IsOwner)
+        {
+            UpdateFromClient();
+        }
     }
 
     void UpdateFromClient()
@@ -103,13 +90,7 @@ public class PlayerMovement : NetworkBehaviour
             isLookingLocked = !isLookingLocked;
         }
 
-        if (!isLookingLocked)
-        {
-            UpdateRotation();
-            transform.Rotate(0, mouseX, 0);
-            cameraTurn.localRotation = Quaternion.Euler(rotationX, 0, 0);
-        }
-
+        if (!isLookingLocked) UpdateRotation();
         UpdateMovement();
         UpdateGravity();
 
@@ -125,6 +106,8 @@ public class PlayerMovement : NetworkBehaviour
     {
         mouseX = Input.GetAxis("Mouse X") * lookSpeed * Time.deltaTime;
         mouseY = Input.GetAxis("Mouse Y") * lookSpeed * Time.deltaTime;
+        transform.Rotate(0, mouseX, 0);
+        cameraTurn.localRotation = Quaternion.Euler(rotationX, 0, 0);
 
         rotationX -= mouseY;
         rotationX = Mathf.Clamp(rotationX, -90, 90);
@@ -160,5 +143,11 @@ public class PlayerMovement : NetworkBehaviour
         {
             velocity.y += 10f;
         }
+    }
+    
+    void TeleportToNextSpawnPoint()
+    {
+        spawnPosition = GameManager.GetAvailableSpawnPoint();
+        transform.position = spawnPosition;
     }
 }

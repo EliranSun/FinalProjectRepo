@@ -71,8 +71,7 @@ public class PlayerKillController : NetworkBehaviour
 
             if (hit.collider.gameObject.CompareTag("Player"))
             {
-                PlayerKillController hitPlayerController =
-                    hit.collider.gameObject.GetComponent<PlayerKillController>();
+                PlayerKillController hitPlayerController = hit.collider.gameObject.GetComponent<PlayerKillController>();
                 hitPlayerController.TakeAHitServerRpc(damage);
 
                 if (hitPlayerController.health.Value - damage <= 0)
@@ -99,8 +98,7 @@ public class PlayerKillController : NetworkBehaviour
     {
         if (IsOwner)
         {
-            GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text =
-                $"Hit! {newHealth}/100 \r\n";
+            GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text = $"Hit! {newHealth}/100 \r\n";
             Invoke(nameof(ClearPlayerMessages), 4);
 
             if (newHealth == 0)
@@ -135,8 +133,7 @@ public class PlayerKillController : NetworkBehaviour
     void TakeAHitServerRpc(int damage = 10)
     {
         health.Value -= damage;
-        GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text =
-            $"Hit! {health.Value}/100 \r\n";
+        GameObject.Find("PlayerMessages").GetComponent<TextMeshProUGUI>().text = $"Hit! {health.Value}/100 \r\n";
         Invoke(nameof(ClearPlayerMessages), 4);
 
         if (health.Value <= 0)

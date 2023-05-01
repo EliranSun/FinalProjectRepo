@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/FiringRange1.unity
+    guid: a5a49c1038dc996439e65b3fa4be0bbe
+  - enabled: 0
+    path: Assets/Scenes/Fire Range & Network.unity
+    guid: c4fc1cfcb16fc46808a438a873731268
   m_configObjects: {}
